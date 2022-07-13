@@ -123,32 +123,44 @@ def utility(board):
         return 0
 
 
-def propagate(board):
+def propagate(board, alpha, beta):
     """
     Executes minimax returning the tuple (score, move)
+    
+    alpha keeps track of the best maximized score
+    beta keeps track of the best minimized score
     """
     if terminal(board):
         return (utility(board), None)
 
-    if player(board) == X: # Maximize
-        best = (-math.inf, None)
-        comparison = max
-    else: # Minimize
-        best = (math.inf, None)
-        comparison = min
+    # Maximize
+    if player(board) == X:
+        best_score, best_move = -math.inf, None
+        for move in actions(board):
+            score, _ = propagate(result(board, move), alpha, beta)
+            if max(best_score, score) != best_score:
+                best_score, best_move = score, move
+                alpha = best_score
+                # Stop if the current best of the branch is better than the previously known one (this move is surely better)
+                if best_score >= beta: break
+    # Minimize
+    else:
+        best_score, best_move = math.inf, None
+        for move in actions(board):
+            score, _ = propagate(result(board, move), alpha, beta)
+            if min(best_score, score) != best_score:
+                best_score, best_move = score, move
+                beta = best_score
+                # Stop if the previously known score is better than the current best of this branch (the previous move is surely better)
+                if alpha >= best_score: break
 
-    for move in actions(board):
-        val = propagate(result(board, move))
-        if comparison(best[0], val[0]) != best[0]:
-            best = (val[0], move)
-
-    return best
+    return (best_score, best_move)
 
 
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    score, move = propagate(board)
+    score, move = propagate(board, -math.inf, math.inf)
     return move
         
