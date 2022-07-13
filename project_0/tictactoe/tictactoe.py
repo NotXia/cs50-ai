@@ -108,6 +108,14 @@ def terminal(board):
             return False
     return True
 
+def empty(board):
+    """
+    Return True if the board is empty
+    """
+    for row in board:
+        if row.count(EMPTY) != 3:
+            return False
+    return True
 
 def utility(board):
     """
@@ -126,7 +134,7 @@ def utility(board):
 def propagate(board, alpha, beta):
     """
     Executes minimax returning the tuple (score, move)
-    
+
     alpha keeps track of the best maximized score
     beta keeps track of the best minimized score
     """
@@ -161,6 +169,9 @@ def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    score, move = propagate(board, -math.inf, math.inf)
+    if empty(board): return (1, 1) # Manually choose the action if first player (to avoid calculating the entire tree)
+
+    # If time complexity is more important than space, it could be worth to save the generated tree instead of computing it every time
+    _, move = propagate(board, -math.inf, math.inf)
     return move
         
