@@ -185,7 +185,7 @@ class MinesweeperAI():
     def _isLegal(self, cell):
         return (0 <= cell[0] < self.height) and (0 <= cell[1] < self.width)
 
-    def _unexploredNeighborsOf(self, cell):
+    def _neighborsOf(self, cell):
         """
         Returns all the unexplored neighbors of a cell.
         """
@@ -216,32 +216,40 @@ class MinesweeperAI():
         """
         self.moves_made.add(cell)
         self.mark_safe(cell)
-        self.knowledge.append(Sentence(self._unexploredNeighborsOf(cell), count))
+        
+        # Create the new sentence with only unknown cells and removing known mines from count
+        new_cells = self._neighborsOf(cell) - self.moves_made
+        new_count = count - len(new_cells.intersection(self.mines))
+        new_cells = new_cells - self.mines
+        new_sentence = Sentence(new_cells, new_count)
+        self.knowledge.append(new_sentence)
 
-        # Repeat until nothing changes
-        changed = True
-        while changed:
-            changed = False
+        new_sentences = [ new_sentence ]
+        while len(new_sentences) > 0:
+            to_eval_sentence = new_sentences.pop()
 
-            for sentence in self.knowledge.copy():
-                # Updates safe cells
-                for safe in sentence.known_safes():
-                    if not safe in self.safes: 
-                        self.mark_safe(safe)
-                        changed = True
-                # Updates mine cells
-                for mine in sentence.known_mines():
-                    if not mine in self.mines: 
-                        self.mark_mine(mine)
-                        changed = True
+            changed = True
+            while changed:
+                changed = False
+                for s in self.knowledge:
+                    # Updates safe cells
+                    for safe in s.known_safes():
+                        if not safe in self.safes: 
+                            self.mark_safe(safe)
+                            changed = True
+                    # Updates mine cells
+                    for mine in s.known_mines():
+                        if not mine in self.mines: 
+                            self.mark_mine(mine)
+                            changed = True
 
             # Subset checks
-            for sentence in self.knowledge.copy():
-                for sentence2 in self.knowledge.copy():
-                    if sentence != sentence2 and sentence.subset(sentence2):
-                        if not (sentence2 - sentence) in self.knowledge:
-                            self.knowledge.append(sentence2 - sentence)
-                            changed = True
+            for sentence2 in self.knowledge.copy():
+                if (to_eval_sentence != sentence2) and (to_eval_sentence.subset(sentence2)):
+                    new_inferred = sentence2 - to_eval_sentence
+                    if not new_inferred in self.knowledge:
+                        new_sentences.append(new_inferred)
+                        self.knowledge.append(new_inferred)
 
     def make_safe_move(self):
         """
