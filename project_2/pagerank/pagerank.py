@@ -2,6 +2,8 @@ import os
 import random
 import re
 import sys
+import numpy as np
+import math
 
 DAMPING = 0.85
 SAMPLES = 10000
@@ -57,7 +59,22 @@ def transition_model(corpus, page, damping_factor):
     linked to by `page`. With probability `1 - damping_factor`, choose
     a link at random chosen from all pages in the corpus.
     """
-    raise NotImplementedError
+    probability = { page_name: 0 for page_name in corpus }
+
+    if len(corpus[page]) > 0:
+        # Exploring neighbours
+        for neighbour in corpus[page]:
+            probability[neighbour] += (damping_factor / len(corpus[page]))
+
+        # Exploring a random page
+        for page_name in corpus:
+            probability[page_name] += ((1-damping_factor) / len(corpus))
+    else:
+        for page_name in corpus:
+            probability[page_name] += (1 / len(corpus))
+
+
+    return probability
 
 
 def sample_pagerank(corpus, damping_factor, n):
@@ -69,7 +86,20 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    visited_times = { page_name: 0 for page_name in corpus }
+
+    # First sample
+    curr_page = random.choice( list(corpus.keys()) )
+    visited_times[curr_page] += 1
+
+    for _ in range(n-1):
+        next_probability = transition_model(corpus, curr_page, damping_factor)
+
+        # Next page
+        curr_page = np.random.choice(list(next_probability.keys()), p=list(next_probability.values()))
+        visited_times[curr_page] += 1
+
+    return { page_name: (visited_times[page_name] / n) for page_name in corpus }
 
 
 def iterate_pagerank(corpus, damping_factor):
@@ -81,7 +111,26 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    def convergence(old_probability, new_probability):
+        diff = [ math.fabs(old_probability[page_name]-new_probability[page_name]) for page_name in corpus ]
+        return all( x <= 0.001 for x in diff )
+
+    probability = { page_name: 1/len(corpus) for page_name in corpus }
+    prev_probability = { page_name: -float("inf") for page_name in corpus }
+    
+    while not convergence(prev_probability, probability):
+        prev_probability = probability.copy()
+
+        for curr_page in corpus:
+            # Determining the pages (and their neighbours) that links to the current page
+            links_to_me = {}
+            for page_name in corpus:
+                if curr_page in corpus[page_name] or len(corpus[page_name]) == 0: 
+                    links_to_me[page_name] = corpus[page_name] if len(corpus[page_name]) > 0 else list(corpus.keys())
+
+            probability[curr_page] = ((1-damping_factor)/len(corpus)) + (damping_factor*sum(prev_probability[neighbour]/len(links_to_me[neighbour]) for neighbour in links_to_me))
+    
+    return probability
 
 
 if __name__ == "__main__":
