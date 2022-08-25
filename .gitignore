@@ -128,3 +128,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 cs50ai.code-workspace
+project_5/traffic/gtsrb/
+project_5/traffic/gtsrb-small/
