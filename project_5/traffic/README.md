@@ -66,7 +66,7 @@ tf.keras.layers.Dense(NUM_CATEGORIES, activation="softmax")
 The resulting model had an accuracy of 97.7% on training set and 91.8% on testing set, quite similar to `model1.*`.
 
 ### Model 2.1
-Now that the neural network has more hidden layer nodes, I tried to put drop out back.
+Now that the neural network has more nodes in the hidden layer, I tried to put drop out back.
 ```
 tf.keras.layers.Conv2D(32, (3, 3), activation="relu", input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)),
 
@@ -86,7 +86,8 @@ Suspecting that `model2.1` was dropping out too many nodes, I tried reducing the
 
 ### Model 2.2_20
 The accuracy of `model2.2` was significantly increasing in each epoch, so I tried to train the same model for 20 epochs.
-The resulting model had an accuracy of 91.9% on training set and 94.6% on testing set which is significantly better than the model with 10 epochs.
+The resulting model had an accuracy of 91.9% on training set and 94.6% on testing set which is significantly better than the model with 10 epochs.\
+Despite the result, I think `model1.1` is preferable since it has roughly the same accuracy and it is easier to train.
 
 
 ## Activation function
