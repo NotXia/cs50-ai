@@ -90,10 +90,10 @@ def get_model():
         # Flatten units
         tf.keras.layers.Flatten(),
 
-        # Add a hidden layer with dropout
+        # Add a hidden layer
         tf.keras.layers.Dense(128, activation="linear"),
 
-        # Add an output layer with output units for all 10 digits
+        # Add an output layer
         tf.keras.layers.Dense(NUM_CATEGORIES, activation="softmax")
     ])
 
