@@ -96,10 +96,8 @@ def np_chunk(tree):
     def hasSymbolAsChild(tree, symbol):
         for child in tree:
             if type(child) == nltk.tree.Tree:
-                if child.label() == symbol: 
-                    return True
-                else:
-                    return hasSymbolAsChild(child, symbol)
+                if child.label() == symbol: return True
+                elif hasSymbolAsChild(child, symbol): return True
         return False
 
     def walk(tree):
